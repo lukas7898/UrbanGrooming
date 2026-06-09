@@ -23,12 +23,6 @@ export const metadata: Metadata = {
   },
 };
 
-const services = [
-  "Грумінг малих собак",
-  "Грумінг середніх собак",
-  "Грумінг котів",
-];
-
 const benefits = [
   "Преміальний, чистий підхід до догляду без зайвого шуму",
   "Каталог товарів готовий до майбутнього e-commerce розвитку",
@@ -126,22 +120,15 @@ export default function Home() {
 
       <section className="bg-white px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl">
-          <div className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
+          <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
             <SectionTitle
               eyebrow="Салон"
-              title="Grooming services"
-              description="Послуги для собак і котів з акцентом на комфорт тварини, охайний фініш і зрозумілу комунікацію."
+              title="Грумінг через Altegio"
+              description="Запис на грумінг зараз ведемо напряму через Altegio, щоб клієнт одразу обрав доступний час без зайвих сторінок."
             />
-            <div className="grid gap-4 sm:grid-cols-3">
-              {services.map((service) => (
-                <div key={service} className="rounded-lg bg-background p-6">
-                  <p className="text-lg font-black text-dark">{service}</p>
-                  <p className="mt-3 text-sm leading-6 text-dark/65">
-                    Консультація, догляд і підбір формату процедури.
-                  </p>
-                </div>
-              ))}
-            </div>
+            <CTAButton href={altegioBookingUrl} external variant="dark">
+              Записатися на грумінг
+            </CTAButton>
           </div>
         </div>
       </section>

@@ -1,11 +1,12 @@
 import Link from "next/link";
+import { altegioBookingUrl } from "@/lib/links";
 
 const navItems = [
-  { href: "/catalog", label: "Магазин" },
-  { href: "/cart", label: "Кошик" },
-  { href: "/services", label: "Грумінг" },
-  { href: "/orders", label: "Мої заявки" },
-  { href: "/contacts", label: "Контакти" },
+  { href: "/catalog", label: "Магазин", external: false },
+  { href: "/cart", label: "Кошик", external: false },
+  { href: altegioBookingUrl, label: "Грумінг", external: true },
+  { href: "/orders", label: "Мої заявки", external: false },
+  { href: "/contacts", label: "Контакти", external: false },
 ];
 
 export function Header() {
@@ -24,15 +25,27 @@ export function Header() {
           </span>
         </Link>
         <nav className="flex items-center gap-1 sm:gap-2">
-          {navItems.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-lg px-3 py-2 text-sm font-semibold text-dark/75 transition hover:bg-white hover:text-dark sm:px-4"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) =>
+            item.external ? (
+              <a
+                key={item.href}
+                href={item.href}
+                target="_blank"
+                rel="noreferrer"
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-dark/75 transition hover:bg-white hover:text-dark sm:px-4"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="rounded-lg px-3 py-2 text-sm font-semibold text-dark/75 transition hover:bg-white hover:text-dark sm:px-4"
+              >
+                {item.label}
+              </Link>
+            ),
+          )}
         </nav>
       </div>
     </header>

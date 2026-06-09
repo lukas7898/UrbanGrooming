@@ -17,9 +17,14 @@ export function Footer() {
             <Link href="/catalog" className="hover:text-dark">
               Магазин
             </Link>
-            <Link href="/services" className="hover:text-dark">
-              Послуги
-            </Link>
+            <a
+              href={altegioBookingUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-dark"
+            >
+              Запис на грумінг
+            </a>
             <Link href="/contacts" className="hover:text-dark">
               Контакти
             </Link>
