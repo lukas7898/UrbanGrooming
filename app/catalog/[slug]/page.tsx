@@ -114,7 +114,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
           ) : null}
 
           <CTAButton
-            href={createTelegramOrderLink(product.name)}
+            href={createTelegramOrderLink(product)}
             external
             className="mt-8 w-full sm:w-auto"
           >
