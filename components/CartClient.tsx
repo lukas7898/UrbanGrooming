@@ -191,9 +191,12 @@ export function CartClient({ products }: CartClientProps) {
                 className="flex justify-between gap-4 border-b border-dark/10 pb-3 last:border-0 last:pb-0"
               >
                 <div>
-                  <p className="font-bold text-dark">
+                  <Link
+                    href={`/catalog/${item.productSlug}`}
+                    className="font-bold text-dark transition hover:text-dark/65"
+                  >
                     {item.brand} {item.productName}
-                  </p>
+                  </Link>
                   <p className="mt-1 text-sm text-dark/55">
                     {item.quantity} x {formatPrice(item.price)}
                   </p>
@@ -258,7 +261,12 @@ export function CartClient({ products }: CartClientProps) {
                   {line.product.brand}
                 </p>
                 <h2 className="mt-2 text-xl font-black text-dark">
-                  {line.product.name}
+                  <Link
+                    href={`/catalog/${line.product.slug}`}
+                    className="transition hover:text-dark/65"
+                  >
+                    {line.product.name}
+                  </Link>
                 </h2>
                 <p className="mt-2 text-sm font-semibold text-dark/55">
                   Доступно: {line.maxQuantity} шт.
