@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "telegram:chat-id": "node scripts/get-telegram-chat-id.mjs"
+    "telegram:chat-id": "node scripts/get-telegram-chat-id.mjs",
+    "telegram:test": "node scripts/test-telegram-bot.mjs"
   },
   "dependencies": {
     "next": "^15.0.0",
