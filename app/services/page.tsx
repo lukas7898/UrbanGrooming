@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { CTAButton } from "@/components/CTAButton";
 import { SectionTitle } from "@/components/SectionTitle";
+import { altegioBookingUrl } from "@/lib/links";
 
 export const metadata: Metadata = {
   title: "Грумінг послуги",
@@ -49,7 +50,7 @@ export default function ServicesPage() {
         <SectionTitle
           eyebrow="Салон"
           title="Грумінг послуги"
-          description="Оберіть напрям догляду та напишіть нам, щоб уточнити тривалість, вартість і доступний час."
+          description="Оберіть напрям догляду та запишіться онлайн через Altegio."
         />
         <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
           {services.map((service) => (
@@ -60,7 +61,7 @@ export default function ServicesPage() {
               <h2 className="text-2xl font-black text-dark">{service.title}</h2>
               <p className="mt-4 leading-7 text-dark/65">{service.description}</p>
               <CTAButton
-                href="https://t.me/urbangroominglviv"
+                href={altegioBookingUrl}
                 external
                 variant="dark"
                 className="mt-auto w-full"

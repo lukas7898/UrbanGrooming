@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { CTAButton } from "@/components/CTAButton";
 import { SectionTitle } from "@/components/SectionTitle";
+import { altegioBookingUrl, instagramUrl } from "@/lib/links";
 
 export const metadata: Metadata = {
   title: "Контакти",
   description:
-    "Контакти Urban Grooming Lviv: Instagram, Telegram, адреса, телефон і графік роботи.",
+    "Контакти Urban Grooming Lviv: адреса у Львові, Instagram, Altegio запис і графік роботи.",
   openGraph: {
     title: "Контакти | Urban Grooming Lviv",
     description:
@@ -15,9 +16,9 @@ export const metadata: Metadata = {
 };
 
 const contactRows = [
-  { label: "Адреса", value: "Львів, адреса буде додана перед запуском" },
-  { label: "Телефон", value: "+380 XX XXX XX XX" },
-  { label: "Графік", value: "Пн-Сб: 10:00-19:00, Нд: за домовленістю" },
+  { label: "Адреса", value: "м. Львів, вул. Під Голоском 19Д" },
+  { label: "Графік", value: "Щодня: 10:00-20:00" },
+  { label: "Instagram", value: "@urbangruminglviv" },
 ];
 
 export default function ContactsPage() {
@@ -27,7 +28,7 @@ export default function ContactsPage() {
         <SectionTitle
           eyebrow="Зв'язок"
           title="Контакти"
-          description="Для запису на грумінг або замовлення товарів напишіть у зручний канал."
+          description="Запис на грумінг через Altegio, товари можна оформити через кошик на сайті."
         />
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_0.9fr]">
@@ -52,25 +53,25 @@ export default function ContactsPage() {
               Онлайн
             </p>
             <h2 className="mt-3 text-3xl font-black tracking-normal">
-              Instagram і Telegram
+              Instagram і запис онлайн
             </h2>
             <p className="mt-4 leading-7 text-white/70">
-              Пишіть для консультації, запису або замовлення товарів з каталогу.
+              Запис на грумінг доступний через Altegio. Для новин, консультацій і живих оновлень переходьте в Instagram.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row lg:flex-col">
               <CTAButton
-                href="https://www.instagram.com/urbangruminglviv"
+                href={altegioBookingUrl}
                 external
                 variant="primary"
               >
-                Instagram
+                Записатися через Altegio
               </CTAButton>
               <CTAButton
-                href="https://t.me/urbangroominglviv"
+                href={instagramUrl}
                 external
                 variant="outline"
               >
-                Telegram
+                Instagram
               </CTAButton>
             </div>
           </div>

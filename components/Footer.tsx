@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { altegioBookingUrl, instagramUrl } from "@/lib/links";
 
 export function Footer() {
   return (
@@ -28,7 +29,7 @@ export function Footer() {
           <p className="text-sm font-bold text-dark">Соцмережі</p>
           <div className="mt-3 flex flex-col gap-2 text-sm text-dark/65">
             <a
-              href="https://www.instagram.com/urbangruminglviv"
+              href={instagramUrl}
               target="_blank"
               rel="noreferrer"
               className="hover:text-dark"
@@ -36,12 +37,12 @@ export function Footer() {
               Instagram
             </a>
             <a
-              href="https://t.me/urbangroominglviv"
+              href={altegioBookingUrl}
               target="_blank"
               rel="noreferrer"
               className="hover:text-dark"
             >
-              Telegram
+              Запис Altegio
             </a>
           </div>
         </div>

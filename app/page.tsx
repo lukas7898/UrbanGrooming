@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CTAButton } from "@/components/CTAButton";
 import { ProductCard } from "@/components/ProductCard";
 import { SectionTitle } from "@/components/SectionTitle";
+import { altegioBookingUrl } from "@/lib/links";
 import {
   getCategories,
   getFeaturedProducts,
@@ -31,7 +32,7 @@ const services = [
 const benefits = [
   "Преміальний, чистий підхід до догляду без зайвого шуму",
   "Каталог товарів готовий до майбутнього e-commerce розвитку",
-  "Зручне замовлення через Telegram та швидкий контакт",
+  "Зручний кошик для зоотоварів і онлайн-запис на грумінг через Altegio",
 ];
 
 export default function Home() {
@@ -55,7 +56,7 @@ export default function Home() {
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
               <CTAButton href="/catalog">Перейти в магазин</CTAButton>
-              <CTAButton href="/services" variant="outline">
+              <CTAButton href={altegioBookingUrl} variant="outline" external>
                 Записатися на грумінг
               </CTAButton>
             </div>
@@ -193,7 +194,7 @@ export default function Home() {
                 Підібрати товар або записатися на грумінг
               </h2>
               <p className="mt-3 max-w-2xl text-white/70">
-                Напишіть нам у Telegram або Instagram, і ми швидко зорієнтуємо по товарах та послугах.
+                Замовляйте товари через кошик або записуйтеся на грумінг онлайн через Altegio.
               </p>
             </div>
             <CTAButton href="/contacts">Контакти</CTAButton>
