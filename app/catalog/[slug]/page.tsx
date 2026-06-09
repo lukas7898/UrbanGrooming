@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { ProductOrderForm } from "@/components/ProductOrderForm";
+import { AddToCartForm } from "@/components/AddToCartForm";
 import { formatPrice } from "@/lib/format";
 import { getProductBySlug, getProducts } from "@/services/products";
 
@@ -115,7 +115,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           ) : null}
 
-          <ProductOrderForm product={product} />
+          <AddToCartForm product={product} />
         </div>
       </div>
     </section>

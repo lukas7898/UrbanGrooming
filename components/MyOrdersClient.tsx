@@ -3,15 +3,62 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { formatPrice } from "@/lib/format";
+import { ordersStorageKey } from "@/types/cart";
 import type { OrderReceipt } from "@/types/order";
 
-const ordersStorageKey = "urban-grooming-orders";
+type LegacyOrderReceipt = {
+  id: string;
+  createdAt: string;
+  productSlug: string;
+  productName: string;
+  brand: string;
+  category: string;
+  quantity: number;
+  total: number;
+  customerName: string;
+  customerPhone: string;
+};
 
 function formatOrderDate(value: string) {
   return new Intl.DateTimeFormat("uk-UA", {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function isCurrentOrderReceipt(
+  order: OrderReceipt | LegacyOrderReceipt,
+): order is OrderReceipt {
+  if ("items" in order && Array.isArray(order.items)) {
+    return true;
+  }
+
+  return false;
+}
+
+function normalizeOrder(order: OrderReceipt | LegacyOrderReceipt) {
+  if (isCurrentOrderReceipt(order)) {
+    return order;
+  }
+
+  return {
+    id: order.id,
+    createdAt: order.createdAt,
+    customerName: order.customerName,
+    customerPhone: order.customerPhone,
+    total: order.total,
+    items: [
+      {
+        productSlug: order.productSlug,
+        productName: order.productName,
+        brand: order.brand,
+        category: order.category,
+        quantity: order.quantity,
+        price: order.total / order.quantity,
+        total: order.total,
+      },
+    ],
+  } satisfies OrderReceipt;
 }
 
 export function MyOrdersClient() {
@@ -21,7 +68,10 @@ export function MyOrdersClient() {
   useEffect(() => {
     try {
       const rawOrders = window.localStorage.getItem(ordersStorageKey);
-      setOrders(rawOrders ? (JSON.parse(rawOrders) as OrderReceipt[]) : []);
+      const parsedOrders = rawOrders
+        ? (JSON.parse(rawOrders) as Array<OrderReceipt | LegacyOrderReceipt>)
+        : [];
+      setOrders(parsedOrders.map(normalizeOrder));
     } catch {
       setOrders([]);
     } finally {
@@ -67,7 +117,9 @@ export function MyOrdersClient() {
                 {order.id}
               </p>
               <h2 className="mt-2 text-xl font-black text-dark">
-                {order.brand} {order.productName}
+                {order.items.length === 1
+                  ? `${order.items[0].brand} ${order.items[0].productName}`
+                  : `${order.items.length} позиції в заявці`}
               </h2>
               <p className="mt-2 text-sm font-semibold text-dark/55">
                 {formatOrderDate(order.createdAt)}
@@ -78,11 +130,28 @@ export function MyOrdersClient() {
             </span>
           </div>
 
-          <div className="mt-5 grid gap-3 text-sm sm:grid-cols-3">
-            <div className="rounded-lg bg-background p-4">
-              <p className="font-bold text-dark/45">Кількість</p>
-              <p className="mt-1 font-black text-dark">{order.quantity}</p>
-            </div>
+          <div className="mt-5 grid gap-3">
+            {order.items.map((item) => (
+              <div
+                key={item.productSlug}
+                className="rounded-lg bg-background p-4 text-sm"
+              >
+                <div className="flex justify-between gap-4">
+                  <p className="font-black text-dark">
+                    {item.brand} {item.productName}
+                  </p>
+                  <p className="font-black text-dark">
+                    {formatPrice(item.total)}
+                  </p>
+                </div>
+                <p className="mt-1 font-semibold text-dark/55">
+                  {item.quantity} x {formatPrice(item.price)}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
             <div className="rounded-lg bg-background p-4">
               <p className="font-bold text-dark/45">Клієнт</p>
               <p className="mt-1 font-black text-dark">{order.customerName}</p>
@@ -93,12 +162,14 @@ export function MyOrdersClient() {
             </div>
           </div>
 
-          <Link
-            href={`/catalog/${order.productSlug}`}
-            className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg border border-dark/10 px-4 py-2 text-sm font-black text-dark transition hover:border-dark/30 hover:bg-primary"
-          >
-            Відкрити товар
-          </Link>
+          {order.items.length === 1 ? (
+            <Link
+              href={`/catalog/${order.items[0].productSlug}`}
+              className="mt-5 inline-flex min-h-11 items-center justify-center rounded-lg border border-dark/10 px-4 py-2 text-sm font-black text-dark transition hover:border-dark/30 hover:bg-primary"
+            >
+              Відкрити товар
+            </Link>
+          ) : null}
         </article>
       ))}
     </div>

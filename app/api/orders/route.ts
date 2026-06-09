@@ -1,12 +1,17 @@
 import { NextResponse } from "next/server";
 import { formatPrice } from "@/lib/format";
 import { getProductBySlug } from "@/services/products";
+import type { OrderReceiptItem } from "@/types/order";
 
 type OrderPayload = {
-  productSlug?: unknown;
-  quantity?: unknown;
+  items?: unknown;
   customerName?: unknown;
   customerPhone?: unknown;
+};
+
+type IncomingOrderItem = {
+  productSlug: string;
+  quantity: number;
 };
 
 function sanitizeText(value: unknown): string {
@@ -23,29 +28,76 @@ function getSiteUrl(request: Request): string {
   return new URL(request.url).origin;
 }
 
+function parseItems(value: unknown): IncomingOrderItem[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const itemMap = new Map<string, number>();
+
+  for (const item of value) {
+    if (!item || typeof item !== "object") {
+      continue;
+    }
+
+    const payloadItem = item as {
+      productSlug?: unknown;
+      quantity?: unknown;
+    };
+    const productSlug = sanitizeText(payloadItem.productSlug);
+    const quantity =
+      typeof payloadItem.quantity === "number" &&
+      Number.isInteger(payloadItem.quantity)
+        ? payloadItem.quantity
+        : 0;
+
+    if (!productSlug || quantity <= 0) {
+      continue;
+    }
+
+    itemMap.set(productSlug, (itemMap.get(productSlug) ?? 0) + quantity);
+  }
+
+  return Array.from(itemMap.entries()).map(([productSlug, quantity]) => ({
+    productSlug,
+    quantity,
+  }));
+}
+
+function createOrderId() {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+
+  return `UG-${timestamp}-${random}`;
+}
+
 function buildOrderMessage({
   orderId,
   createdAt,
   customerName,
   customerPhone,
-  productName,
-  brand,
-  category,
-  quantity,
+  items,
   total,
-  productUrl,
+  siteUrl,
 }: {
   orderId: string;
   createdAt: string;
   customerName: string;
   customerPhone: string;
-  productName: string;
-  brand: string;
-  category: string;
-  quantity: number;
+  items: OrderReceiptItem[];
   total: number;
-  productUrl: string;
+  siteUrl: string;
 }) {
+  const itemLines = items.flatMap((item, index) => [
+    `${index + 1}. ${item.brand} ${item.productName}`,
+    `   Категорія: ${item.category}`,
+    `   Кількість: ${item.quantity}`,
+    `   Ціна: ${formatPrice(item.price)} x ${item.quantity} = ${formatPrice(
+      item.total,
+    )}`,
+    `   Сторінка: ${siteUrl}/catalog/${item.productSlug}`,
+  ]);
+
   return [
     "Нове замовлення Urban Grooming Lviv",
     `Номер заявки: ${orderId}`,
@@ -58,20 +110,11 @@ function buildOrderMessage({
     `Клієнт: ${customerName}`,
     `Телефон: ${customerPhone}`,
     "",
-    `Товар: ${brand} ${productName}`,
-    `Категорія: ${category}`,
-    `Кількість: ${quantity}`,
-    `Сума: ${formatPrice(total)}`,
+    "Товари:",
+    ...itemLines,
     "",
-    `Сторінка товару: ${productUrl}`,
+    `Разом: ${formatPrice(total)}`,
   ].join("\n");
-}
-
-function createOrderId() {
-  const timestamp = Date.now().toString(36).toUpperCase();
-  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
-
-  return `UG-${timestamp}-${random}`;
 }
 
 export async function POST(request: Request) {
@@ -100,17 +143,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const productSlug = sanitizeText(payload.productSlug);
   const customerName = sanitizeText(payload.customerName);
   const customerPhone = sanitizeText(payload.customerPhone);
-  const quantity =
-    typeof payload.quantity === "number" && Number.isInteger(payload.quantity)
-      ? payload.quantity
-      : 0;
+  const incomingItems = parseItems(payload.items);
 
-  if (!productSlug || !customerName || !customerPhone) {
+  if (!customerName || !customerPhone || incomingItems.length === 0) {
     return NextResponse.json(
-      { ok: false, error: "Заповніть ім'я, телефон і товар." },
+      { ok: false, error: "Заповніть ім'я, телефон і кошик." },
       { status: 400 },
     );
   }
@@ -129,42 +168,58 @@ export async function POST(request: Request) {
     );
   }
 
-  if (quantity < 1 || quantity > 99) {
-    return NextResponse.json(
-      { ok: false, error: "Кількість має бути від 1 до 99." },
-      { status: 400 },
-    );
-  }
+  const orderItems: OrderReceiptItem[] = [];
 
-  const product = getProductBySlug(productSlug);
+  for (const item of incomingItems) {
+    if (item.quantity < 1 || item.quantity > 99) {
+      return NextResponse.json(
+        { ok: false, error: "Кількість має бути від 1 до 99." },
+        { status: 400 },
+      );
+    }
 
-  if (!product) {
-    return NextResponse.json(
-      { ok: false, error: "Товар не знайдено." },
-      { status: 404 },
-    );
-  }
+    const product = getProductBySlug(item.productSlug);
 
-  if (product.stockQuantity <= 0) {
-    return NextResponse.json(
-      { ok: false, error: "Товар зараз недоступний для замовлення." },
-      { status: 409 },
-    );
-  }
+    if (!product) {
+      return NextResponse.json(
+        { ok: false, error: "Один з товарів не знайдено." },
+        { status: 404 },
+      );
+    }
 
-  if (quantity > product.stockQuantity) {
-    return NextResponse.json(
-      {
-        ok: false,
-        error: `Доступно лише ${product.stockQuantity} шт. Оберіть меншу кількість.`,
-      },
-      { status: 409 },
-    );
+    if (product.stockQuantity <= 0) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `${product.brand} ${product.name} зараз недоступний для замовлення.`,
+        },
+        { status: 409 },
+      );
+    }
+
+    if (item.quantity > product.stockQuantity) {
+      return NextResponse.json(
+        {
+          ok: false,
+          error: `${product.brand} ${product.name}: доступно лише ${product.stockQuantity} шт.`,
+        },
+        { status: 409 },
+      );
+    }
+
+    orderItems.push({
+      productSlug: product.slug,
+      productName: product.name,
+      brand: product.brand,
+      category: product.category,
+      quantity: item.quantity,
+      price: product.price,
+      total: product.price * item.quantity,
+    });
   }
 
   const siteUrl = getSiteUrl(request);
-  const productUrl = `${siteUrl}/catalog/${product.slug}`;
-  const total = product.price * quantity;
+  const total = orderItems.reduce((sum, item) => sum + item.total, 0);
   const orderId = createOrderId();
   const createdAt = new Date().toISOString();
   const text = buildOrderMessage({
@@ -172,12 +227,9 @@ export async function POST(request: Request) {
     createdAt,
     customerName,
     customerPhone,
-    productName: product.name,
-    brand: product.brand,
-    category: product.category,
-    quantity,
+    items: orderItems,
     total,
-    productUrl,
+    siteUrl,
   });
 
   const telegramResponse = await fetch(
@@ -210,11 +262,7 @@ export async function POST(request: Request) {
     order: {
       id: orderId,
       createdAt,
-      productSlug: product.slug,
-      productName: product.name,
-      brand: product.brand,
-      category: product.category,
-      quantity,
+      items: orderItems,
       total,
       customerName,
       customerPhone,

@@ -38,19 +38,22 @@ npm run dev:3001
 
 ## Telegram Orders
 
-Product pages include a simple order form:
+Product pages include an add-to-cart flow:
 
 - quantity selector
+- stock quantity limit per product
+- local cart saved in the customer's browser
+- multi-item checkout on `/cart`
 - customer name
 - customer phone with `+380` prefilled
-- submit button
+- submit button for the whole cart
 - success confirmation on the website
 - local customer receipt saved on `/orders`
 - Telegram notification to the admin
 
-The customer does not copy any text manually. The website sends the order through a Telegram bot from the server-side route `app/api/orders/route.ts`.
+The customer does not copy any text manually. The website sends the cart order through a Telegram bot from the server-side route `app/api/orders/route.ts`.
 
-The `/orders` page stores receipts in the customer's browser local storage. This is useful for an MVP, but it is not a cross-device order history. A real order history later requires a database and customer identity.
+The cart and `/orders` page store data in the customer's browser local storage. This is useful for an MVP, but it is not cross-device. A real cart and order history later require a database and customer identity.
 
 ### Bot Setup
 
