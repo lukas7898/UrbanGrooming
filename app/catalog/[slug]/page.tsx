@@ -80,7 +80,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {product.category}
             </span>
             <span className="rounded-full bg-primary px-4 py-2 text-sm font-bold text-dark">
-              {product.stockStatus}
+              {product.stockQuantity > 0
+                ? `${product.stockStatus} · ${product.stockQuantity} шт.`
+                : product.stockStatus}
             </span>
           </div>
 

@@ -7,6 +7,7 @@ export type Product = {
   price: number;
   oldPrice?: number | null;
   stockStatus: string;
+  stockQuantity: number;
   imageUrl: string;
   shortDescription: string;
   description: string;

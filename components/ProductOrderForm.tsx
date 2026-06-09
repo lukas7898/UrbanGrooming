@@ -11,7 +11,10 @@ type ProductOrderFormProps = {
 type SubmitState = "idle" | "loading" | "success" | "error";
 
 export function ProductOrderForm({ product }: ProductOrderFormProps) {
-  const [quantity, setQuantity] = useState(1);
+  const availableQuantity = Math.max(0, product.stockQuantity);
+  const maxOrderQuantity = Math.min(99, availableQuantity);
+  const isAvailable = availableQuantity > 0;
+  const [quantity, setQuantity] = useState(isAvailable ? 1 : 0);
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
@@ -97,6 +100,11 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
   return (
     <form onSubmit={handleSubmit} className="mt-8 rounded-lg bg-background p-5">
       <p className="text-lg font-black text-dark">Оформити заявку</p>
+      <p className="mt-2 text-sm font-semibold text-dark/60">
+        {isAvailable
+          ? `Доступно для замовлення: ${availableQuantity} шт.`
+          : "Товар зараз недоступний для замовлення."}
+      </p>
 
       <div className="mt-5">
         <label className="mb-2 block text-sm font-bold text-dark/70">
@@ -106,7 +114,8 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
           <button
             type="button"
             onClick={() => setQuantity((current) => Math.max(1, current - 1))}
-            className="min-h-12 text-xl font-black text-dark transition hover:bg-primary"
+            disabled={!isAvailable || quantity <= 1}
+            className="min-h-12 text-xl font-black text-dark transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white"
             aria-label="Зменшити кількість"
           >
             -
@@ -116,8 +125,11 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
           </div>
           <button
             type="button"
-            onClick={() => setQuantity((current) => Math.min(99, current + 1))}
-            className="min-h-12 text-xl font-black text-dark transition hover:bg-primary"
+            onClick={() =>
+              setQuantity((current) => Math.min(maxOrderQuantity, current + 1))
+            }
+            disabled={!isAvailable || quantity >= maxOrderQuantity}
+            className="min-h-12 text-xl font-black text-dark transition hover:bg-primary disabled:cursor-not-allowed disabled:opacity-35 disabled:hover:bg-white"
             aria-label="Збільшити кількість"
           >
             +
@@ -176,10 +188,14 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
 
       <button
         type="submit"
-        disabled={submitState === "loading"}
+        disabled={submitState === "loading" || !isAvailable}
         className="mt-5 inline-flex min-h-12 w-full items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-black text-dark transition hover:-translate-y-0.5 hover:bg-[#e9cb3e] disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0"
       >
-        {submitState === "loading" ? "Відправляємо..." : "Замовити"}
+        {submitState === "loading"
+          ? "Відправляємо..."
+          : isAvailable
+            ? "Замовити"
+            : "Немає в наявності"}
       </button>
     </form>
   );

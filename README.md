@@ -92,6 +92,7 @@ Use this structure:
   "price": 299,
   "oldPrice": 349,
   "stockStatus": "В наявності",
+  "stockQuantity": 4,
   "imageUrl": "/images/products/placeholder-product.jpg",
   "shortDescription": "Short product summary.",
   "description": "Full product description.",
@@ -105,6 +106,7 @@ Use this structure:
 Notes:
 
 - Keep `slug` unique because it becomes the product page URL.
+- Use `stockQuantity` for the real available quantity. The order form will not allow customers to order more than this number.
 - Put product images in `public/images/products/`.
 - Use `featured: true` to show a product on the home page.
 

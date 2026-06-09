@@ -121,6 +121,23 @@ export async function POST(request: Request) {
     );
   }
 
+  if (product.stockQuantity <= 0) {
+    return NextResponse.json(
+      { ok: false, error: "Товар зараз недоступний для замовлення." },
+      { status: 409 },
+    );
+  }
+
+  if (quantity > product.stockQuantity) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: `Доступно лише ${product.stockQuantity} шт. Оберіть меншу кількість.`,
+      },
+      { status: 409 },
+    );
+  }
+
   const siteUrl = getSiteUrl(request);
   const productUrl = `${siteUrl}/catalog/${product.slug}`;
   const total = product.price * quantity;

@@ -51,7 +51,9 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
         <div className="mt-auto pt-5">
           <p className="mb-4 text-sm font-semibold text-dark/60">
-            {product.stockStatus}
+            {product.stockQuantity > 0
+              ? `${product.stockStatus} · ${product.stockQuantity} шт.`
+              : product.stockStatus}
           </p>
           <Link
             href={`/catalog/${product.slug}`}
