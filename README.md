@@ -1,0 +1,95 @@
+# Urban Grooming Lviv MVP Catalog
+
+Production-ready MVP website for Urban Grooming Lviv, combining grooming service information with a pet goods catalog that can later evolve into e-commerce.
+
+## Tech Stack
+
+- Next.js 15+
+- TypeScript
+- Tailwind CSS
+- App Router
+- Static product catalog from `data/products.json`
+
+## Installation
+
+```bash
+npm install
+```
+
+## Local Development
+
+```bash
+npm run dev
+```
+
+Open the local URL shown in the terminal, usually `http://localhost:3000`.
+
+If the dev server stays on `Starting...` for more than a minute on Windows, stop it with `Ctrl + C` and run:
+
+```bash
+npm run dev:turbo
+```
+
+If port `3000` is already in use:
+
+```bash
+npm run dev:3001
+```
+
+## Adding Products
+
+Products are stored in `data/products.json`.
+
+Use this structure:
+
+```json
+{
+  "id": 13,
+  "slug": "example-product",
+  "name": "Example Product",
+  "brand": "Example Brand",
+  "category": "Корм",
+  "price": 299,
+  "oldPrice": 349,
+  "stockStatus": "В наявності",
+  "imageUrl": "/images/products/placeholder-product.jpg",
+  "shortDescription": "Short product summary.",
+  "description": "Full product description.",
+  "tags": ["собаки", "корм"],
+  "seoTitle": "Example Product купити у Львові",
+  "seoDescription": "SEO description for the product page.",
+  "featured": true
+}
+```
+
+Notes:
+
+- Keep `slug` unique because it becomes the product page URL.
+- Put product images in `public/images/products/`.
+- Use `featured: true` to show a product on the home page.
+
+## Changing Colors
+
+Brand colors are defined in two places:
+
+- `tailwind.config.ts` for Tailwind utility classes
+- `app/globals.css` for CSS variables
+
+Current palette:
+
+- Primary: `#F2D44B`
+- Dark: `#2D2D2D`
+- Background: `#F8F8F8`
+- Text: `#222222`
+
+## Deployment to Vercel
+
+1. Push the repository to GitHub.
+2. Import the project in Vercel.
+3. Keep the default Next.js build settings.
+4. Optional: set `NEXT_PUBLIC_SITE_URL` to the production domain for canonical metadata.
+5. Deploy.
+
+## Future API Migration
+
+Catalog access is isolated in `services/products.ts`, so a later API or database implementation can replace the JSON import without changing page and component contracts.
