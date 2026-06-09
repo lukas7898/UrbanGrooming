@@ -36,6 +36,46 @@ If port `3000` is already in use:
 npm run dev:3001
 ```
 
+## Telegram Orders
+
+Product pages include a simple order form:
+
+- quantity selector
+- customer name
+- customer phone
+- submit button
+- success confirmation on the website
+- Telegram notification to the admin
+
+The customer does not copy any text manually. The website sends the order through a Telegram bot from the server-side route `app/api/orders/route.ts`.
+
+### Bot Setup
+
+1. Open Telegram and find `@BotFather`.
+2. Send `/newbot`.
+3. Choose a bot name and username.
+4. Copy the bot token.
+5. Open your new bot and send `/start`.
+6. Get your admin chat ID by opening this URL in a browser, replacing `TOKEN` with the bot token:
+
+```text
+https://api.telegram.org/botTOKEN/getUpdates
+```
+
+Find `chat.id` in the response. That value is `TELEGRAM_ADMIN_CHAT_ID`.
+
+Create a local `.env.local` file:
+
+```bash
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+TELEGRAM_BOT_TOKEN=your_bot_token_here
+TELEGRAM_ADMIN_CHAT_ID=your_chat_id_here
+```
+
+Restart the dev server after changing `.env.local`.
+
+For Vercel deployment, add the same variables in Project Settings → Environment Variables. Set `NEXT_PUBLIC_SITE_URL` to the production domain.
+
 ## Adding Products
 
 Products are stored in `data/products.json`.

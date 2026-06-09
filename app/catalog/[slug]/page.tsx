@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { CTAButton } from "@/components/CTAButton";
-import { formatPrice, createTelegramOrderLink } from "@/lib/format";
+import { ProductOrderForm } from "@/components/ProductOrderForm";
+import { formatPrice } from "@/lib/format";
 import { getProductBySlug, getProducts } from "@/services/products";
 
 type ProductPageProps = {
@@ -113,13 +113,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             </div>
           ) : null}
 
-          <CTAButton
-            href={createTelegramOrderLink(product)}
-            external
-            className="mt-8 w-full sm:w-auto"
-          >
-            Замовити
-          </CTAButton>
+          <ProductOrderForm product={product} />
         </div>
       </div>
     </section>
