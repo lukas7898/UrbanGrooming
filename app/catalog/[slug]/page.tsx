@@ -64,7 +64,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             fill
             priority
             sizes="(min-width: 1024px) 45vw, 100vw"
-            className="object-cover"
+            className="object-contain p-6 sm:p-10"
           />
         </div>
 

@@ -8,6 +8,14 @@ const imageDirectory = resolve(process.cwd(), "public/images/products");
 mkdirSync(imageDirectory, { recursive: true });
 
 function extractArticle(product) {
+  if (product.supplierArticle) {
+    const articleMatch = String(product.supplierArticle).match(/[0-9]{5,6}/);
+
+    if (articleMatch) {
+      return articleMatch[0];
+    }
+  }
+
   const source = `${product.name} ${product.description}`;
   const match = source.match(/арт\.?\s*([0-9]{5,6})/i);
 

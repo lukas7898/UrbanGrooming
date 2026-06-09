@@ -8,6 +8,8 @@ export type Product = {
   oldPrice?: number | null;
   stockStatus: string;
   stockQuantity: number;
+  supplierArticle?: string;
+  barcode?: string;
   imageUrl: string;
   shortDescription: string;
   description: string;

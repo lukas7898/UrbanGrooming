@@ -249,11 +249,67 @@ function createDisplayName(invoiceName, brand) {
 }
 
 function createShortDescription(productName, category) {
-  if (category === "Корм") {
-    return `${productName}. Позиція з поточного асортименту Urban Grooming Lviv.`;
+  const lowerName = productName.toLowerCase();
+
+  if (category === "Корм" && lowerName.includes("волог")) {
+    return "Вологий корм для щоденного раціону або як смачне доповнення до основного харчування.";
   }
 
-  return `${productName}. Товар з поточного асортименту Urban Grooming Lviv.`;
+  if (category === "Корм" && lowerName.includes("cat")) {
+    return "Сухий корм для котів з підібраною формулою для щоденного харчування.";
+  }
+
+  if (category === "Корм" && lowerName.includes("dog")) {
+    return "Сухий корм для собак з формулою для щоденного збалансованого раціону.";
+  }
+
+  if (category === "Корм") {
+    return "Корм для щоденного харчування собак або котів.";
+  }
+
+  if (category === "Ласощі") {
+    return "Ласощі для винагороди, прогулянок або приємного доповнення до раціону.";
+  }
+
+  return "Товар для щоденного догляду та комфорту вашого улюбленця.";
+}
+
+function createDescription(productName, category) {
+  const lowerName = productName.toLowerCase();
+
+  if (category === "Корм" && lowerName.includes("weight control")) {
+    return "Формула для котів, яким важливо контролювати вагу. Підходить для регулярного використання як основний раціон.";
+  }
+
+  if (category === "Корм" && lowerName.includes("sterilised")) {
+    return "Раціон для стерилізованих котів. Допомагає підтримувати щоденне харчування з урахуванням особливих потреб після стерилізації.";
+  }
+
+  if (category === "Корм" && lowerName.includes("haircare")) {
+    return "Формула для підтримки шкіри та шерсті. Підходить для котів, яким потрібен додатковий догляд за якістю шерсті.";
+  }
+
+  if (category === "Корм" && lowerName.includes("puppy")) {
+    return "Раціон для цуценят у період росту. Підійде для щоденного годування відповідно до рекомендацій виробника.";
+  }
+
+  if (category === "Корм" && lowerName.includes("kitten")) {
+    return "Раціон для кошенят у період росту. Підходить для щоденного годування відповідно до рекомендацій виробника.";
+  }
+
+  if (category === "Корм" && lowerName.includes("волог")) {
+    return "Вологий корм із м'якою текстурою. Можна використовувати як основний раціон або як доповнення до сухого корму.";
+  }
+
+  if (category === "Корм") {
+    return "Збалансований корм для щоденного раціону. Перед замовленням можна перевірити фасування, склад і рекомендації виробника на упаковці.";
+  }
+
+  if (category === "Ласощі") {
+    return "Смачні ласощі для заохочення та щоденної винагороди. Зручно брати на прогулянку або використовувати під час тренування.";
+  }
+
+  return "Практична позиція для догляду, комфорту або щоденного використання.";
 }
 
 function extractItems(file) {
@@ -317,9 +373,11 @@ const products = Array.from(itemMap.values()).map((item, index) => {
     oldPrice: null,
     stockStatus: "В наявності",
     stockQuantity: item.quantity,
+    supplierArticle: item.article,
+    barcode: item.barcode,
     imageUrl: defaultImageUrl,
     shortDescription: createShortDescription(displayName, category),
-    description: `Поточна позиція каталогу Urban Grooming Lviv. Повна назва з накладної: ${item.name}. Наявність і деталі можна уточнити під час підтвердження замовлення.`,
+    description: createDescription(displayName, category),
     tags: [category.toLowerCase(), brand.toLowerCase()],
     seoTitle: `${displayName} | Urban Grooming Lviv`,
     seoDescription: `${displayName} у каталозі Urban Grooming Lviv.`,

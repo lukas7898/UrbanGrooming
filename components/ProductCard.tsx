@@ -20,7 +20,7 @@ export function ProductCard({ product }: ProductCardProps) {
           alt={product.name}
           fill
           sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
-          className="object-cover transition duration-500 group-hover:scale-105"
+          className="object-contain p-5 transition duration-500 group-hover:scale-105"
         />
       </Link>
       <div className="flex flex-1 flex-col p-5">
