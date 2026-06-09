@@ -86,6 +86,16 @@ For Vercel deployment, add the same variables in Project Settings → Environmen
 
 Products are stored in `data/products.json`.
 
+You can edit products manually or import them from supplier invoice `.xls` files.
+
+To import invoices:
+
+```bash
+npm run import:products -- "C:\path\to\invoice-1.xls" "C:\path\to\invoice-2.xls"
+```
+
+The import script reads product name, quantity, and retail price (`РРЦ`), then rewrites `data/products.json`. Product images still need to be added manually in `public/images/products/`.
+
 Use this structure:
 
 ```json
