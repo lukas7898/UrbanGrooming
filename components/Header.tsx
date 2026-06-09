@@ -3,6 +3,7 @@ import Link from "next/link";
 const navItems = [
   { href: "/catalog", label: "Магазин" },
   { href: "/services", label: "Грумінг" },
+  { href: "/orders", label: "Мої заявки" },
   { href: "/contacts", label: "Контакти" },
 ];
 

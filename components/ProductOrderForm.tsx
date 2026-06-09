@@ -1,7 +1,9 @@
 "use client";
 
 import { type FormEvent, useMemo, useState } from "react";
+import Link from "next/link";
 import { formatPrice } from "@/lib/format";
+import type { OrderReceipt } from "@/types/order";
 import type { Product } from "@/types/product";
 
 type ProductOrderFormProps = {
@@ -9,6 +11,31 @@ type ProductOrderFormProps = {
 };
 
 type SubmitState = "idle" | "loading" | "success" | "error";
+const phonePrefix = "+380";
+const ordersStorageKey = "urban-grooming-orders";
+
+function formatPhoneInput(value: string) {
+  const digits = value.replace(/\D/g, "");
+  const withoutCountryCode = digits.startsWith("380")
+    ? digits.slice(3)
+    : digits.startsWith("0")
+      ? digits.slice(1)
+      : digits;
+
+  return `${phonePrefix}${withoutCountryCode.slice(0, 9)}`;
+}
+
+function saveOrderReceipt(order: OrderReceipt) {
+  try {
+    const rawOrders = window.localStorage.getItem(ordersStorageKey);
+    const orders = rawOrders ? (JSON.parse(rawOrders) as OrderReceipt[]) : [];
+    const nextOrders = [order, ...orders].slice(0, 20);
+
+    window.localStorage.setItem(ordersStorageKey, JSON.stringify(nextOrders));
+  } catch {
+    // Local storage is a convenience receipt only. Telegram remains the source of truth.
+  }
+}
 
 export function ProductOrderForm({ product }: ProductOrderFormProps) {
   const availableQuantity = Math.max(0, product.stockQuantity);
@@ -16,9 +43,10 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
   const isAvailable = availableQuantity > 0;
   const [quantity, setQuantity] = useState(isAvailable ? 1 : 0);
   const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerPhone, setCustomerPhone] = useState(phonePrefix);
   const [submitState, setSubmitState] = useState<SubmitState>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [orderReceipt, setOrderReceipt] = useState<OrderReceipt | null>(null);
 
   const totalPrice = useMemo(
     () => product.price * quantity,
@@ -47,12 +75,15 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
       const result = (await response.json()) as {
         ok?: boolean;
         error?: string;
+        order?: OrderReceipt;
       };
 
-      if (!response.ok || !result.ok) {
+      if (!response.ok || !result.ok || !result.order) {
         throw new Error(result.error || "Не вдалося відправити заявку.");
       }
 
+      setOrderReceipt(result.order);
+      saveOrderReceipt(result.order);
       setSubmitState("success");
     } catch (error) {
       setSubmitState("error");
@@ -65,6 +96,19 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
   }
 
   if (submitState === "success") {
+    const receipt = orderReceipt ?? {
+      id: "Заявку створено",
+      createdAt: new Date().toISOString(),
+      productSlug: product.slug,
+      productName: product.name,
+      brand: product.brand,
+      category: product.category,
+      quantity,
+      total: totalPrice,
+      customerName,
+      customerPhone,
+    };
+
     return (
       <div className="mt-8 rounded-lg border border-primary bg-primary/20 p-5">
         <p className="text-xl font-black text-dark">Заявку відправлено</p>
@@ -73,26 +117,38 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
         </p>
         <div className="mt-5 rounded-lg bg-white p-4 text-sm ring-1 ring-dark/10">
           <div className="flex justify-between gap-4 py-2">
+            <span className="font-semibold text-dark/55">Номер заявки</span>
+            <span className="text-right font-bold text-dark">{receipt.id}</span>
+          </div>
+          <div className="flex justify-between gap-4 py-2">
             <span className="font-semibold text-dark/55">Товар</span>
             <span className="text-right font-bold text-dark">
-              {product.brand} {product.name}
+              {receipt.brand} {receipt.productName}
             </span>
           </div>
           <div className="flex justify-between gap-4 py-2">
             <span className="font-semibold text-dark/55">Кількість</span>
-            <span className="font-bold text-dark">{quantity}</span>
+            <span className="font-bold text-dark">{receipt.quantity}</span>
           </div>
           <div className="flex justify-between gap-4 py-2">
             <span className="font-semibold text-dark/55">Сума</span>
-            <span className="font-bold text-dark">{formatPrice(totalPrice)}</span>
+            <span className="font-bold text-dark">
+              {formatPrice(receipt.total)}
+            </span>
           </div>
           <div className="flex justify-between gap-4 py-2">
             <span className="font-semibold text-dark/55">Клієнт</span>
             <span className="text-right font-bold text-dark">
-              {customerName}, {customerPhone}
+              {receipt.customerName}, {receipt.customerPhone}
             </span>
           </div>
         </div>
+        <Link
+          href="/orders"
+          className="mt-5 inline-flex min-h-11 w-full items-center justify-center rounded-lg bg-dark px-4 py-2 text-sm font-black text-white transition hover:bg-[#1f1f1f] sm:w-auto"
+        >
+          Мої заявки
+        </Link>
       </div>
     );
   }
@@ -159,9 +215,13 @@ export function ProductOrderForm({ product }: ProductOrderFormProps) {
           <input
             type="tel"
             value={customerPhone}
-            onChange={(event) => setCustomerPhone(event.target.value)}
-            minLength={7}
+            onChange={(event) =>
+              setCustomerPhone(formatPhoneInput(event.target.value))
+            }
+            minLength={13}
+            maxLength={13}
             required
+            inputMode="tel"
             placeholder="+380..."
             className="min-h-12 w-full rounded-lg border border-dark/10 bg-white px-4 text-sm font-medium text-dark outline-none transition placeholder:text-dark/35 focus:border-dark/35 focus:ring-4 focus:ring-primary/30"
           />

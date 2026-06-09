@@ -42,12 +42,15 @@ Product pages include a simple order form:
 
 - quantity selector
 - customer name
-- customer phone
+- customer phone with `+380` prefilled
 - submit button
 - success confirmation on the website
+- local customer receipt saved on `/orders`
 - Telegram notification to the admin
 
 The customer does not copy any text manually. The website sends the order through a Telegram bot from the server-side route `app/api/orders/route.ts`.
+
+The `/orders` page stores receipts in the customer's browser local storage. This is useful for an MVP, but it is not a cross-device order history. A real order history later requires a database and customer identity.
 
 ### Bot Setup
 

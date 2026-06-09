@@ -24,6 +24,8 @@ function getSiteUrl(request: Request): string {
 }
 
 function buildOrderMessage({
+  orderId,
+  createdAt,
   customerName,
   customerPhone,
   productName,
@@ -33,6 +35,8 @@ function buildOrderMessage({
   total,
   productUrl,
 }: {
+  orderId: string;
+  createdAt: string;
   customerName: string;
   customerPhone: string;
   productName: string;
@@ -44,6 +48,12 @@ function buildOrderMessage({
 }) {
   return [
     "Нове замовлення Urban Grooming Lviv",
+    `Номер заявки: ${orderId}`,
+    `Дата: ${new Intl.DateTimeFormat("uk-UA", {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "Europe/Kyiv",
+    }).format(new Date(createdAt))}`,
     "",
     `Клієнт: ${customerName}`,
     `Телефон: ${customerPhone}`,
@@ -55,6 +65,13 @@ function buildOrderMessage({
     "",
     `Сторінка товару: ${productUrl}`,
   ].join("\n");
+}
+
+function createOrderId() {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).slice(2, 6).toUpperCase();
+
+  return `UG-${timestamp}-${random}`;
 }
 
 export async function POST(request: Request) {
@@ -98,9 +115,16 @@ export async function POST(request: Request) {
     );
   }
 
-  if (customerName.length < 2 || customerPhone.length < 7) {
+  if (customerName.length < 2) {
     return NextResponse.json(
-      { ok: false, error: "Перевірте ім'я та телефон." },
+      { ok: false, error: "Перевірте ім'я." },
+      { status: 400 },
+    );
+  }
+
+  if (!/^\+380\d{9}$/.test(customerPhone)) {
+    return NextResponse.json(
+      { ok: false, error: "Телефон має бути у форматі +380XXXXXXXXX." },
       { status: 400 },
     );
   }
@@ -141,7 +165,11 @@ export async function POST(request: Request) {
   const siteUrl = getSiteUrl(request);
   const productUrl = `${siteUrl}/catalog/${product.slug}`;
   const total = product.price * quantity;
+  const orderId = createOrderId();
+  const createdAt = new Date().toISOString();
   const text = buildOrderMessage({
+    orderId,
+    createdAt,
     customerName,
     customerPhone,
     productName: product.name,
@@ -177,5 +205,19 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    order: {
+      id: orderId,
+      createdAt,
+      productSlug: product.slug,
+      productName: product.name,
+      brand: product.brand,
+      category: product.category,
+      quantity,
+      total,
+      customerName,
+      customerPhone,
+    },
+  });
 }
