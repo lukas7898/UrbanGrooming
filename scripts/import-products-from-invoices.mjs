@@ -75,6 +75,15 @@ function cleanName(value) {
     .trim();
 }
 
+function normalizeDisplayName(value) {
+  return cleanName(value)
+    .replace(/\s*арт\.?\s*[\w/-]+/gi, "")
+    .replace(/\s*\bарт\s*[\w/-]+/gi, "")
+    .replace(/\s+/g, " ")
+    .replace(/\s+,/g, ",")
+    .trim();
+}
+
 function inferBrand(name) {
   const lowerName = name.toLowerCase();
 
@@ -152,6 +161,93 @@ function inferCategory(name) {
   return "Корм";
 }
 
+function createDisplayName(invoiceName, brand) {
+  let name = normalizeDisplayName(invoiceName);
+
+  const replacements = [
+    [/^Корм\s+/i, ""],
+    [/Бріт Кеа дог/gi, "Brit Care Dog"],
+    [/Бріт Кеа Кет/gi, "Brit Care Cat"],
+    [/Бріт Кеа/gi, "Brit Care"],
+    [/Гіпоалергенний/gi, "Hypoallergenic"],
+    [/едалт/gi, "Adult"],
+    [/лардж брід/gi, "Large Breed"],
+    [/медіум брід/gi, "Medium Breed"],
+    [/Паппі/gi, "Puppy"],
+    [/Грейн Фрі/gi, "Grain Free"],
+    [/Хеіркеа Хеалсі енд Шайні Коат/gi, "Haircare Healthy & Shiny Coat"],
+    [/Хелсі Гровз енд Девелопмент/gi, "Healthy Growth & Development"],
+    [/Стеріалайзд Урінарі Хелз/gi, "Sterilised Urinary Health"],
+    [/Стеріалайзд Вейт Контрол/gi, "Sterilised Weight Control"],
+    [/Стеріалайзд Сенсатів/gi, "Sterilised Sensitive"],
+    [/д\/дорослих/gi, "для дорослих"],
+    [/д\/цуценят/gi, "для цуценят"],
+    [/д\/кошенят/gi, "для кошенят"],
+  ];
+
+  for (const [pattern, replacement] of replacements) {
+    name = name.replace(pattern, replacement);
+  }
+
+  for (const marker of ["Brit Care Cat", "Brit Care Dog"]) {
+    const firstIndex = name.indexOf(marker);
+    const lastIndex = name.lastIndexOf(marker);
+
+    if (firstIndex !== -1 && lastIndex !== firstIndex) {
+      name = name.slice(lastIndex);
+    }
+  }
+
+  name = name
+    .replace(/великих порід вагою від\s*\d+\s?кг,?\s*/gi, "")
+    .replace(/середніх порід вагою\s*[\d-]+\s?кг,?\s*/gi, "")
+    .replace(/для стерилізованих котів з надмірною вагою\s*/gi, "")
+    .replace(/для стерилізованих котів з чутливим травленням\s*/gi, "")
+    .replace(/для стерилізованих котів\s*/gi, "")
+    .replace(/для котів\s*/gi, "")
+    .replace(/котів\s+Brit Care Cat/gi, "Brit Care Cat")
+    .replace(/^Brit Care\s+вологий\s+Brit Care Cat/gi, "Brit Care Cat вологий")
+    .replace(/для дорослих собак\s*/gi, "")
+    .replace(/для дорослих котів\s*/gi, "")
+    .replace(/для кошенят\s*/gi, "")
+    .replace(/для цуценят\s*/gi, "")
+    .replace(/що потребують догляду за шкірою та шерстю\s*/gi, "")
+    .replace(/для здорового росту та розвитку\s*/gi, "")
+    .replace(/сухий\s*/gi, "")
+    .replace(/вологий повнораціонний\s*/gi, "вологий ")
+    .replace(/вологий\s+для\s+/gi, "вологий ")
+    .replace(/\s*,\s*/g, ", ")
+    .replace(/,\s*$/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!name.toLowerCase().startsWith(brand.toLowerCase())) {
+    name = `${brand} ${name}`;
+  }
+
+  if (name.length <= 96) {
+    return name;
+  }
+
+  const sizeMatch = name.match(/(\d+(?:[,.]\d+)?\s?(?:кг|г))\b/gi);
+  const size = sizeMatch ? sizeMatch[sizeMatch.length - 1] : "";
+  const compact = name
+    .replace(/\s+вагою\s+[^,]+/gi, "")
+    .replace(/\s+порід\s+[^,]+/gi, "")
+    .split(",")
+    .slice(0, 2)
+    .join(",")
+    .trim();
+
+  if (compact.length <= 96) {
+    return compact;
+  }
+
+  return `${compact.slice(0, 88).replace(/\s+\S*$/, "")}${
+    size ? ` ${size}` : ""
+  }`;
+}
+
 function createShortDescription(productName, category) {
   if (category === "Корм") {
     return `${productName}. Позиція з поточного асортименту Urban Grooming Lviv.`;
@@ -204,7 +300,8 @@ const usedSlugs = new Map();
 const products = Array.from(itemMap.values()).map((item, index) => {
   const brand = inferBrand(item.name);
   const category = inferCategory(item.name);
-  const baseSlug = slugify(`${brand}-${item.name}`) || `product-${index + 1}`;
+  const displayName = createDisplayName(item.name, brand);
+  const baseSlug = slugify(`${brand}-${displayName}`) || `product-${index + 1}`;
   const slugCount = usedSlugs.get(baseSlug) ?? 0;
   const slug = slugCount === 0 ? baseSlug : `${baseSlug}-${slugCount + 1}`;
 
@@ -213,7 +310,7 @@ const products = Array.from(itemMap.values()).map((item, index) => {
   return {
     id: index + 1,
     slug,
-    name: item.name,
+    name: displayName,
     brand,
     category,
     price: Math.round(item.retailPrice),
@@ -221,12 +318,11 @@ const products = Array.from(itemMap.values()).map((item, index) => {
     stockStatus: "В наявності",
     stockQuantity: item.quantity,
     imageUrl: defaultImageUrl,
-    shortDescription: createShortDescription(item.name, category),
-    description:
-      "Поточна позиція каталогу Urban Grooming Lviv. Наявність і деталі можна уточнити під час підтвердження замовлення.",
+    shortDescription: createShortDescription(displayName, category),
+    description: `Поточна позиція каталогу Urban Grooming Lviv. Повна назва з накладної: ${item.name}. Наявність і деталі можна уточнити під час підтвердження замовлення.`,
     tags: [category.toLowerCase(), brand.toLowerCase()],
-    seoTitle: `${item.name} | Urban Grooming Lviv`,
-    seoDescription: `${item.name} у каталозі Urban Grooming Lviv.`,
+    seoTitle: `${displayName} | Urban Grooming Lviv`,
+    seoDescription: `${displayName} у каталозі Urban Grooming Lviv.`,
     featured: index < 12,
   };
 });

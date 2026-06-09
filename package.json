@@ -11,7 +11,8 @@
     "lint": "eslint .",
     "telegram:chat-id": "node scripts/get-telegram-chat-id.mjs",
     "telegram:test": "node scripts/test-telegram-bot.mjs",
-    "import:products": "node scripts/import-products-from-invoices.mjs"
+    "import:products": "node scripts/import-products-from-invoices.mjs",
+    "images:brit-care": "node scripts/download-brit-care-images.mjs"
   },
   "dependencies": {
     "next": "^15.0.0",
